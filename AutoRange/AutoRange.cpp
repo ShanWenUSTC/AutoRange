@@ -185,11 +185,25 @@ bool AutoRange::WriteRangeToFile(const char* _filename)
 		return false;
 	}
 
+	fout<<"Layers: "<<endl;
+	for (size_t i=0; i<layers_.size(); i++)
+	{
+		fout<<"layer "<<i<<": "<<endl;
+
+		list<int>::iterator liter = layers_[i].begin();
+		for (; liter != layers_[i].end(); ++liter)
+		{
+			fout<<*liter<<' ';
+		}
+		fout<<endl;
+	}
+	fout<<endl;
+
 	fout<<"Launch: "<<endl;
 	for (size_t i=0; i<nodes_acoustic_.size(); i++)
 	{
 		int nindex = nodes_acoustic_[i];
-		fout<<nindex<<": "<<nodes_[nindex].launch_time_<<endl;
+		fout<<nindex<<": "<<(int)nodes_[nindex].launch_time_<<endl;
 	}
 	
 	fout<<endl;
@@ -199,7 +213,7 @@ bool AutoRange::WriteRangeToFile(const char* _filename)
 		fout<<"Node: "<<i<<endl;
 		for (size_t j=0; j<nodes_[i].apeturetime_open_.size(); j++)
 		{
-			fout<<nodes_[i].apeture_index_[j]<<' '<<nodes_[i].apeturetime_open_[j]<<' '<<nodes_[i].apeturetime_close_[j]<<endl;
+			fout<<nodes_[i].apeture_index_[j]<<' '<<(int)nodes_[i].apeturetime_open_[j]<<' '<<(int)nodes_[i].apeturetime_close_[j]<<endl;
 		}
 		fout<<endl;
 	}
@@ -323,6 +337,13 @@ void AutoRange::CreateExtraLines()
 				if (nodes_[index_add].candidate_nodes_index_.size()<size_t(num_max_lines_))
 				{
 					matrix_range_net_(index_point, index_add) = matrix_range_net_(index_add, index_point) = 1;
+					nodes_[index_point].candidate_nodes_index_.push_back(index_add);
+					nodes_[index_add].candidate_nodes_index_.push_back(index_point);
+
+					if (nodes_[index_point].candidate_nodes_index_.size()>=size_t(num_max_lines_))
+					{
+						break;
+					}
 				}
 			}
 		}
@@ -585,7 +606,7 @@ double AutoRange::CalculateApeturesize(int _index1, int _index2)
 {
 	if (nodes_[_index1].index_line_ == nodes_[_index2].index_line_)
 	{
-		return 5;
+		return 10;
 	}
 	else
 	{
@@ -597,15 +618,15 @@ double AutoRange::CalculateApeturesize(int _index1, int _index2)
 		}
 		else if (dis<999)
 		{
-			return 10;
+			return 20;
 		}
 		else if (dis<2999)
 		{
-			return 20;
+			return 40;
 		}
 		else
 		{
-			return 30;
+			return 60;
 		}
 	}
 }
